@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuthStore } from '@/app/store/authStore'
 import { useGoalStore } from '@/app/store/goalStore'
 import { getTodayKey, addDays } from '@/shared/utils/dateUtils'
+import { ActivityCategory } from '@/shared/types'
 
 export default function TestGoalCreation() {
   const { user } = useAuthStore()
@@ -28,13 +29,13 @@ export default function TestGoalCreation() {
       const today = getTodayKey()
       const endDate = addDays(today, 29)
 
-      const simpleGoal = {
+      const simpleGoal: Omit<any, 'id' | 'createdAt' | 'updatedAt'> = {
         userId: user.uid,
         title: 'Test Goal ' + new Date().getTime(),
         description: 'Simple test goal',
         emoji: '🎯',
         color: '#f093fb',
-        category: 'fitness',
+        category: 'fitness' as ActivityCategory,
         totalDays: 30,
         startDate: today,
         endDate: endDate,
@@ -44,7 +45,7 @@ export default function TestGoalCreation() {
             parentGoalId: '',
             title: 'Test Sub-Goal',
             description: 'Test',
-            category: 'fitness',
+            category: 'fitness' as ActivityCategory,
             icon: '✅',
             color: '#f093fb',
             targetType: 'boolean',
@@ -55,8 +56,8 @@ export default function TestGoalCreation() {
             updatedAt: new Date().toISOString(),
           },
         ],
-        completionRule: 'all_required',
-        status: 'active',
+        completionRule: 'all_required' as const,
+        status: 'active' as const,
         coverGradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
       }
 

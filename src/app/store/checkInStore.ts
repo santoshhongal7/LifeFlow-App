@@ -78,6 +78,7 @@ export const useCheckInStore = create<CheckInStore>((set, get) => ({
     set({ loading: true });
     try {
       await submitCheckIn(userId, {
+        userId,
         goalId,
         date,
         subGoalEntries,

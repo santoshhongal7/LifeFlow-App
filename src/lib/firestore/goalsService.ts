@@ -5,11 +5,13 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDoc,
   query,
   where,
   orderBy,
   onSnapshot,
   serverTimestamp,
+  arrayUnion,
   Unsubscribe,
 } from 'firebase/firestore';
 import { MainGoal, SubGoal } from '@/shared/types';
@@ -74,7 +76,6 @@ export const addSubGoal = async (
   goalId: string,
   subGoal: Omit<SubGoal, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<void> => {
-  const goal = (await import('../firebase')).db;
   const docRef = doc(db, COL, goalId);
   const timestamp = serverTimestamp();
 
@@ -86,7 +87,7 @@ export const addSubGoal = async (
   };
 
   await updateDoc(docRef, {
-    subGoals: (await import('firebase/firestore')).arrayUnion(newSubGoal),
+    subGoals: arrayUnion(newSubGoal),
     updatedAt: timestamp,
   });
 };
@@ -97,12 +98,15 @@ export const updateSubGoal = async (
   updates: Partial<SubGoal>
 ): Promise<void> => {
   const docRef = doc(db, COL, goalId);
+  const goalSnapshot = await getDoc(docRef);
+  const goalData = goalSnapshot.data() as MainGoal;
+
+  const updatedSubGoals = goalData.subGoals.map(sg =>
+    sg.id === subGoalId ? { ...sg, ...updates } : sg
+  );
 
   await updateDoc(docRef, {
-    subGoals: (await import('firebase/firestore')).arrayUnion({
-      ...updates,
-      id: subGoalId,
-    }),
+    subGoals: updatedSubGoals,
     updatedAt: serverTimestamp(),
   });
 };
@@ -111,13 +115,9 @@ export const deleteSubGoal = async (
   goalId: string,
   subGoalId: string
 ): Promise<void> => {
-  // This will need to be handled on client side using the goal's subGoals array
   const docRef = doc(db, COL, goalId);
-
-  const goal = (await (
-    await import('firebase/firestore'
-    ).getDoc(docRef)
-  ).data()) as MainGoal;
+  const goalSnapshot = await getDoc(docRef);
+  const goal = goalSnapshot.data() as MainGoal;
 
   const filteredSubGoals = goal.subGoals.filter((sg) => sg.id !== subGoalId);
 
